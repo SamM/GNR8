@@ -81,7 +81,7 @@ module.exports = function(){
                     'for' : request.for,
                     'id' : request.id,
                     'time' : request.time,
-                    'dependencies' : Server.Cache.dependencies[filename]
+                    'dependencies' : dependencies
                 };
                 Server.send('serve dependencies', msg);
             }else{
@@ -103,9 +103,10 @@ module.exports = function(){
                                         console.error(err);
                                         NoDependencies();
                                     }else{
-                                        console.log('FOIJSDLJLG')
                                         file = file.toString();
-                                        file = file.split(/[\n\r]+/g).filter((line)=>line!=='').join('#');
+                                        file = file.split(/[\n\r]+/g).filter((line)=>line!=='');
+                                        file.push(filename.split(/[\/\\]/g).join('/'));
+                                        file = file.join('#');
                                         
                                         let msg = {
                                             'for' : request.for,

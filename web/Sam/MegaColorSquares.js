@@ -1,5 +1,6 @@
-// requires : ./seedrandom.js
-// requires : ./Builder.js
+// requires : seedrandom.js
+// requires : Builder.js
+// requires : MatrixScreen.js
 
 var module = module === undefined ? {} : module;
 (function(module){
@@ -8,14 +9,48 @@ var module = module === undefined ? {} : module;
         
         const THIS = this;
         if(seed === undefined) seed = '';
-        if(Array.isArray(seed)) alert('Array Input');
         if(typeof seed !== 'string') seed = seed.toString();
+
+        let input = seed.split('#');
+        if(input.length > 1){
+            let index = parseInt(input.slice(-1)[0]);
+            if(!isNaN(index)){
+                seed = input.slice(0,-1).join('#');
+                console.log(seed);
+                THIS.i = index;
+            }
+        }
 
         if(THIS.seed === undefined || THIS.seed !== seed) {
             if(seed === '') THIS.RANDOM = Math.random;
             else THIS.RANDOM = typeof THIS.RANDOM === 'function' ? THIS.RANDOM : new THIS.seedrandom(seed);
         }
         THIS.seed = seed;
+
+        if(THIS.i !== undefined){
+            for(var i=0; i<THIS.i; i++){
+                FakeRun();
+            }
+        }
+
+        function FakeRun(){
+            THIS.RANDOM();
+            fakeRandom2DScreen(THIS.MAX_DIVISIONS, THIS.MAX_DEPTH);
+        }
+        function fakeRandom2DScreen(max_divisions, max_depth){
+            if(max_depth<=0) return;
+            var divs = max_divisions-Math.floor(THIS.RANDOM()*max_divisions);
+            for(var i=0; i<divs; i++){
+                (function(a){
+                    THIS.RANDOM();
+                    THIS.RANDOM();
+                    THIS.RANDOM();
+                    THIS.RANDOM();
+                    var newDepth = max_depth-Math.ceil(THIS.RANDOM()*max_depth);
+                    if(newDepth>1) fakeRandom2DScreen(max_divisions, newDepth);
+                })(i);
+            }
+        }
 
         let screen = new THIS.MatrixScreen('2d');
 
@@ -103,6 +138,8 @@ var module = module === undefined ? {} : module;
     const MegaColorSquares = Builder(MatrixScreen2DHSLA, MatrixScreen2DHSLA.dependencies);
 
     this.MegaColorSquares = MegaColorSquares;
+
+    GNR8.generate = MegaColorSquares;
 
     module.exports = MegaColorSquares;
 

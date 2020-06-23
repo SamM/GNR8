@@ -1,2 +1,3 @@
-./seedrandom.js
-./Builder.js
+seedrandom.js
+Builder.js
+MatrixScreen.js
