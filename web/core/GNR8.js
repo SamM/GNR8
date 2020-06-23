@@ -56,6 +56,8 @@ GNR8.hide = function(){
 };
 
 GNR8.setup = function(){
+    document.body.style.backgroundColor = 'black';  
+
     GNR8.display = document.createElement('div');
     let style = GNR8.display.style;
     Object.assign(style, {
