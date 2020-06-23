@@ -33,7 +33,7 @@ GNR8.get = function(id){
 
 GNR8.implement = GNR8.use = function(module_name){
     try{
-        require('./modules/'+module_name).call(GNR8, GNR8);
+        require('./modules/'+module_name+'.js').call(GNR8, GNR8);
     }catch(ex){
         console.log(GNR8+': GNR8.implement: Failed to implement resource');
         console.error(ex);
