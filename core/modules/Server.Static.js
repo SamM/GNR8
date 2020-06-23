@@ -115,7 +115,7 @@ module.exports = function(){
             let filename = request[0];
             res.statusCode = 200;
             res.setHeader('Content-Type', Server.Static.mimeTypes['html']);
-            let generator_name = filename.split(/[\\\/]/).slice(1).join('/');
+            let generator_name = filename.split(/[\\\/]/).slice(1).reverse().join(' -&gt; ');
             let template = Server.Static.GeneratorHTML.replace('<dependencies/>', script_tags);
             template = template.split('%GENERATOR%').join(generator_name);
             res.write(template);
