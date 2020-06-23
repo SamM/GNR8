@@ -94,7 +94,7 @@ module.exports = function(){
             'response' : res
         })(fileLoc, req, res);
 
-        if(safeSuffix==='\\'){
+        if(safeSuffix==='\\' || safeSuffix === '/'){
             fileLoc = path.join(resolvedBase, 'index.html');
         }
 
