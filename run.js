@@ -7,15 +7,16 @@ GNR8.implement('Server');
 if(cluster.isMaster){
     GNR8.Event('server run')(()=>{
         [
-            '. GNR8 . ART',
-            '. Generative Art',
-            '. version ' + GNR8.version,
             '',
             '//////',
             '//  //',
             '//////////',
             '    //  //',
             '    //////',
+            '',
+            '. GNR8 . ART',
+            '. Generative Art',
+            '. version ' + GNR8.version,
             '',
             'Server running on port '+GNR8.Server.port
         ].forEach((msg)=>{console.log(msg)});

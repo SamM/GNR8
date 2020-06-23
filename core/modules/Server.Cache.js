@@ -1,5 +1,5 @@
 var fs = require('fs');
-
+var path = require('path');
 module.exports = function(){
     
     let GNR8 = this;
@@ -11,65 +11,45 @@ module.exports = function(){
     };
 
     Server.Cache.files = {};
-    Server.Cache.fileExists = function(file){
-        let callback = GNR8.Event.callback();
-        fs.access(file, fs.F_OK, (err) => {
-            if (err) {
-                callback.return(false);
-            }else callback.return(true);
-        })
-        return callback;
-    };
-    Server.Cache.loadFile = function(file){
-        let callback = GNR8.Event.callback();
-        fs.readFile(file, callback.return);
-        return callback;
-    }
+    Server.Cache.dependencies = {};
+
     Server.Cache.serve = function(request){
+        function NoFile(){
+            let msg = {
+                'for' : request.for,
+                'id' : request.id,
+                'time' : request.time
+            };
+            Server.send('serve none', msg);
+        }
         if(request.cmd === 'get file'){
             // Check if file is in cache
             let filename = request.file;
             let file = Server.Cache.files[filename];
             if(file !== undefined){
                 let msg = {
-                    'cmd' : 'serve file',
                     'for' : request.for,
                     'id' : request.id,
                     'file' : file,
                     'time' : request.time
                 };
-
-                let event = GNR8.Event('server serve file');
-                
-                event.trigger({})(msg);
-                Object.assign(msg, event.context);
-
-                process.send(msg);
+                Server.send('serve file', msg);
             }else{
                 // Not in cache
                 // Check to see if file exists
                 // If so, load into cache
-                Server.Cache.fileExists(filename)(function(exists){
-                    if(exists){
-                        Server.Cache.loadFile(filename)(function(err, file){
+                var resolvedBase = path.resolve(Server.staticBasePath);
+                var local_file = path.join(resolvedBase, filename);
+                Server.fileExists(local_file)(function(exists){
+                    if(!exists){
+                        NoFile();
+                    }else{
+                        Server.loadFile(local_file)(function(err, file){
                             if(err){
-                                let msg = {
-                                    'cmd' : 'serve none',
-                                    'for' : request.for,
-                                    'id' : request.id,
-                                    'time' : request.time
-                                };
-                
-                                let event = GNR8.Event('server serve none');
-                                
-                                event.trigger({})(msg);
-                                Object.assign(msg, event.context);
-                
-                                process.send(msg);
+                                NoFile();
                             }else{
                                 file = file.toString();
                                 let msg = {
-                                    'cmd' : 'serve file',
                                     'for' : request.for,
                                     'id' : request.id,
                                     'time' : request.time,
@@ -77,31 +57,72 @@ module.exports = function(){
                                 };
                                 Server.Cache.files[filename] = file;
 
-                                let event = GNR8.Event('server serve file');
-                                
-                                event.trigger({})(msg);
-                                Object.assign(msg, event.context);
-                
-                                process.send(msg);
+                                Server.send('serve file', msg);
                             }
                         });
-                    }else{
-                        let msg = {
-                            'cmd' : 'serve none',
-                            'for' : request.for,
-                            'id' : request.id,
-                            'time' : request.time
-                        };
-        
-                        let event = GNR8.Event('server serve none');
-                        
-                        event.trigger({})(msg);
-                        Object.assign(msg, event.context);
-        
-                        process.send(msg);
                     }
                 })
                
+            }
+        }else if(request.cmd === 'get dependencies'){
+            function NoDependencies(){ 
+                let msg = {
+                    'for' : request.for,
+                    'id' : request.id,
+                    'dependencies' : '',
+                    'time' : request.time
+                }
+                Server.send('serve dependencies', msg);
+            }
+            let filename = request.file;
+            let dependencies = Server.Cache.dependencies[filename];
+            if(dependencies !== undefined){
+                let msg = {
+                    'for' : request.for,
+                    'id' : request.id,
+                    'time' : request.time,
+                    'dependencies' : Server.Cache.dependencies[filename]
+                };
+                Server.send('serve dependencies', msg);
+            }else{
+                var depBase = path.resolve(Server.dependencyBasePath);
+                var dep_file = path.join(depBase, filename+'.txt');
+                var fileBase = path.resolve(Server.staticBasePath);
+                var real_file = path.join(fileBase, filename);
+                Server.fileExists(real_file)(function(exists){
+                    if(!exists){
+                        NoFile();
+                    }else{
+                        Server.fileExists(dep_file)(function(exists){
+                            if(!exists){
+                                NoDependencies();
+                            }else{
+                                Server.loadFile(dep_file)(function(err, file){
+                                    if(err){
+                                        console.log('Error: loading dependencies file `'+dep_file+'`');
+                                        console.error(err);
+                                        NoDependencies();
+                                    }else{
+                                        console.log('FOIJSDLJLG')
+                                        file = file.toString();
+                                        file = file.split(/[\n\r]+/g).filter((line)=>line!=='').join('#');
+                                        
+                                        let msg = {
+                                            'for' : request.for,
+                                            'id' : request.id,
+                                            'time' : request.time,
+                                            'dependencies' : file
+                                        };
+
+                                        Server.Cache.dependencies[filename] = file;
+
+                                        Server.send('serve dependencies', msg);
+                                    }
+                                });
+                            }
+                        })
+                    }
+                });
             }
         }
     };

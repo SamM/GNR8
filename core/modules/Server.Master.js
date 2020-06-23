@@ -36,16 +36,16 @@ module.exports = function(){
     }
 
     Server.Master.staticRequest = function(name, worker, request){
-        if(request.cmd === 'get file'){
+        if(request.cmd === 'get file' || request.cmd === 'get dependencies'){
             let msg = {
-                'cmd' : 'get file',
+                'cmd' : request.cmd,
                 'for' : name,
                 'id' : request.id,
                 'file' : request.file,
                 'time' : request.time
             };
 
-            let event = GNR8.Event('server static get file');
+            let event = GNR8.Event('server static '+request.cmd);
 
             event.trigger({})(msg);
 
@@ -56,7 +56,7 @@ module.exports = function(){
     };
 
     Server.Master.cacheRequest = function(name, worker, request){
-        if(request.cmd === 'serve file'){
+        if(request.cmd === 'serve file' || request.cmd === 'serve dependencies'){
             let worker = Server.workers[request.for];
             if(worker===undefined){
                 console.log('Error: cache request -> send file -> for unknown worker');
@@ -64,13 +64,15 @@ module.exports = function(){
             };
 
             let msg = {
-                'cmd' : 'serve file',
+                'cmd' : request.cmd,
                 'id' : request.id,
-                'file' : request.file,
                 'time' : request.time
             };
 
-            let event = GNR8.Event('server cache serve file');
+            if(request.cmd === 'serve file') msg.file = request.file;
+            else msg.dependencies = request.dependencies;
+
+            let event = GNR8.Event('server cache '+request.cmd);
             event.trigger({})(msg);
 
             Object.assign(msg, event.context);
