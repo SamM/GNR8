@@ -32,9 +32,11 @@
                 controls.i = index;
                 hash = hash.slice(0,-1).join('#')
             }else{
+                controls.i = 0;
                 hash = hash.join('#');
             }
         }else{
+            controls.i = 0;
             hash = hash.join('#');
         }
         controls.hash = hash;
