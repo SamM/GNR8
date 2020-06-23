@@ -1,3 +1,4 @@
 seedrandom.js
 Builder.js
 MatrixScreen.js
+/core/IteratorGallery.js

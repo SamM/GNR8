@@ -1,10 +1,5 @@
-
-module.exports = function(){
-    function Initialize(name){
-        if(Event.listeners[name] === undefined) Event.listeners[name] = [];
-        if(Event.contexts[name] === undefined) Event.contexts[name] = {};
-    }
-    function Event(name, context){
+(function(){
+    function Event(name){
         Initialize(name);
 
         // This function adds a listener
@@ -27,7 +22,12 @@ module.exports = function(){
 
         return event;
     }
-    
+
+    function Initialize(name){
+        if(Event.listeners[name] === undefined) Event.listeners[name] = [];
+        if(Event.contexts[name] === undefined) Event.contexts[name] = {};
+    }
+
     Event.contexts = {};
     Event.listeners = {};
 
@@ -41,7 +41,7 @@ module.exports = function(){
             for(let i=0; i<Event.listeners[name].length;i++){
                 Event.listeners[name][i].apply(Event.contexts[name], args);
             }
-            return Event;
+            return Event(name);
         };
     };
 
@@ -56,7 +56,7 @@ module.exports = function(){
         Initialize(name);
         return function Set(attr, value){
             Event.contexts[name][attr] = value;
-            return Event;
+            return Event(name);
         };
     };
 
@@ -87,9 +87,6 @@ module.exports = function(){
         if(args.length) Callback.trigger.apply(Callback, args);
         return Callback;
     }
-    
 
-    this.Event = Event;
-
-    return Event;
-};
+    GNR8.Event = Event;
+})();
