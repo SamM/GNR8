@@ -1,6 +1,7 @@
 let GNR8 = {};
 
 GNR8._hash = '';
+GNR8._title = '';
 
 GNR8.updateHash = function(){
     GNR8._hash = window.location.hash == '' ? '' : decodeURIComponent(window.location.hash.slice(1));
@@ -9,6 +10,8 @@ GNR8.updateHash = function(){
 
 GNR8.update = function(){
     if(typeof GNR8.generate === 'function'){
+        if(GNR8._hash !== '') document.title = GNR8._hash+ ' << ' + GNR8._title
+        else document.title = GNR8._title;
         let art = GNR8.generate(GNR8._hash)();
         GNR8.show(art);
     }
@@ -42,6 +45,7 @@ GNR8.setup = function(){
     style.width = style.height = '100%';
     GNR8.hide();
     document.body.appendChild(GNR8.display);
+    GNR8._title = document.title;
     window.addEventListener('hashchange', GNR8.updateHash);
     GNR8.updateHash();
     GNR8.update();
