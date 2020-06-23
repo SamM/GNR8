@@ -94,6 +94,10 @@ module.exports = function(){
             'response' : res
         })(fileLoc, req, res);
 
+        if(safeSuffix==='\\'){
+            fileLoc = path.join(resolvedBase, 'index.html');
+        }
+
         // Attempt to load file from Cache worker
         process.send({
             'cmd' : 'get file',
