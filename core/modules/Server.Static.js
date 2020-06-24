@@ -6,27 +6,9 @@ module.exports = function(){
     let GNR8 = this;
     let Server = GNR8.Server;
 
-    function RandomRGB(){
-        function rand(n){
-            return Math.floor(Math.random()*n);
-        }
-        return 'rgb('+[rand(256), rand(256), rand(256)].join(',')+')';
-    };
-
-    function RandomHSL(){
-        function rand(n){
-            return Math.floor(Math.random()*n);
-        }
-        return 'hsl('+[rand(360), rand(100)+'%', rand(100)+'%'].join(',')+')';
-    };
-
-    function RandomHSLA(alphaModifier){
-        alphaModifier = alphaModifier === undefined ? 1 : alphaModifier;
-        function rand(n){
-            return Math.floor(Math.random()*n);
-        }
-        return 'hsla('+[rand(360), rand(100)+'%', rand(100)+'%', Math.random()*alphaModifier].join(',')+')';
-    };
+    if(GNR8.Helpers === undefined){
+        GNR8.implement('Helpers');
+    }
 
     Server.Static = function(){
         Server.instance = http.createServer(Server.Static.serve);
@@ -58,9 +40,9 @@ module.exports = function(){
         }else if(request.cmd === 'serve none'){
             Server.Static.serveNone(request.id, request.time);
         }else if(request.cmd === 'serve dependencies'){
-            Server.Static.serveGenerator(request.id, request.dependencies.split('#'), request.time);
+            Server.Static.serveGenerator(request.id, request.dependencies, request.time);
         }else if(request.cmd === 'serve generators'){
-            Server.Static.serveGeneratorList(request.id, request.generators.split('#'), request.time);
+            Server.Static.serveGeneratorList(request.id, request.generators, request.time);
         }
     };
 
@@ -134,6 +116,9 @@ module.exports = function(){
     });
     
     Server.Static.serveGenerator = function(REQID, dependencies, request_time){
+        if(typeof dependencies === 'string') dependencies = dependencies.split('#');
+        else if(!Array.isArray(dependencies)) dependencies = [];
+
         let script_tags = dependencies.map((dep)=>'<script src="'+dep+'"></script>').join('\n');
         let request = Server.requests[REQID];
         let now = new Date();
@@ -157,6 +142,9 @@ module.exports = function(){
     };
 
     Server.Static.serveGeneratorList = function(REQID, generators, request_time){
+        if(typeof generators === 'string') generators = generators.split('#');
+        else if(!Array.isArray(generators)) generators = [];
+
         let request = Server.requests[REQID];
         if(!request){
             console.log('Error: static worker received generator list for unknown request id');            
@@ -167,11 +155,14 @@ module.exports = function(){
             Server.generators = generators;
             let greetings = Server.Static.home_greetings;
             // Random Background Color
-            let color = RandomRGB();
+            let color = GNR8.Helpers.RandomRGB();
             // Random Generator from the list
-            let generator = generators[Math.floor(Math.random()*generators.length)];
+            //let generator = generators[Math.floor(Math.random()*generators.length)];
+            let generator = '/Sam/SlashWord'
             // Random Greeting from the list
-            let greeting = greetings[Math.floor(Math.random()*greetings.length)];
+            //let greeting = greetings[Math.floor(Math.random()*greetings.length)];
+            let greeting = [GNR8.Helpers.NameMe(2, true),
+                GNR8.Helpers.NameMe(2+Math.ceil(Math.random()*3), true)].join('');
             let location = generator+'?bg='+color+'#'+greeting;
             res.writeHead(302, {
                 'Location': location
