@@ -6,6 +6,28 @@ module.exports = function(){
     let GNR8 = this;
     let Server = GNR8.Server;
 
+    function RandomRGB(){
+        function rand(n){
+            return Math.floor(Math.random()*n);
+        }
+        return 'rgb('+[rand(256), rand(256), rand(256)].join(',')+')';
+    };
+
+    function RandomHSL(){
+        function rand(n){
+            return Math.floor(Math.random()*n);
+        }
+        return 'hsl('+[rand(360), rand(100)+'%', rand(100)+'%'].join(',')+')';
+    };
+
+    function RandomHSLA(alphaModifier){
+        alphaModifier = alphaModifier === undefined ? 1 : alphaModifier;
+        function rand(n){
+            return Math.floor(Math.random()*n);
+        }
+        return 'hsla('+[rand(360), rand(100)+'%', rand(100)+'%', Math.random()*alphaModifier].join(',')+')';
+    };
+
     Server.Static = function(){
         Server.instance = http.createServer(Server.Static.serve);
         Server.instance.listen(Server.port);
@@ -37,6 +59,8 @@ module.exports = function(){
             Server.Static.serveNone(request.id, request.time);
         }else if(request.cmd === 'serve dependencies'){
             Server.Static.serveGenerator(request.id, request.dependencies.split('#'), request.time);
+        }else if(request.cmd === 'serve generators'){
+            Server.Static.serveGeneratorList(request.id, request.generators.split('#'), request.time);
         }
     };
 
@@ -53,19 +77,17 @@ module.exports = function(){
             'response' : res
         })(fileLoc, req, res);
 
-
+        Server.requests[REQID] = [fileLoc, req, res];
 
         if(safeSuffix==='\\' || safeSuffix === '/'){
-            let greetings = Server.Static.home_greetings;
-            res.writeHead(302, {
-                'Location': '/Sam/SlashWord#'+greetings[Math.floor(Math.random()*greetings.length)]
+            process.send({
+                'cmd' : 'get generators',
+                'id' : ''+REQID,
+                'file' : 'index.html',
+                'time' : new Date().getTime()
             });
-            res.end();
             return;
-            // fileLoc = safeSuffix+'index.html';
         }
-
-        Server.requests[REQID] = [fileLoc, req, res];
 
         if(fileLoc.indexOf('.') === -1){
             // Generator request
@@ -119,7 +141,7 @@ module.exports = function(){
         if(!request){
             console.log('Error: static worker received dependencies for unknown request id');            
         }else{
-            let event = GNR8.Event('static serve generator').trigger({})(request[0], dependencies, request_time, now);
+            let event = GNR8.Event('static serve generator').trigger({})(request[0], dependencies, request_time);
             let res = request[2];
             let filename = request[0];
             res.statusCode = 200;
@@ -134,14 +156,46 @@ module.exports = function(){
         }
     };
 
-    Server.Static.serveFile = function(REQID, data, request_time){
+    Server.Static.serveGeneratorList = function(REQID, generators, request_time){
         let request = Server.requests[REQID];
+        if(!request){
+            console.log('Error: static worker received generator list for unknown request id');            
+        }else{
+            let event = GNR8.Event('static serve generators').trigger({})(request[0], generators, request_time);
+            let res = request[2];
+            let filename = request[0];
+            Server.generators = generators;
+            let greetings = Server.Static.home_greetings;
+            // Random Background Color
+            let color = RandomRGB();
+            // Random Generator from the list
+            let generator = generators[Math.floor(Math.random()*generators.length)];
+            // Random Greeting from the list
+            let greeting = greetings[Math.floor(Math.random()*greetings.length)];
+            let location = generator+'?bg='+color+'#'+greeting;
+            res.writeHead(302, {
+                'Location': location
+            });
+            res.end();
+            delete Server.requests[REQID];
+            console.log('Redirect to Random Generator from : '+filename);
+            console.log('Redirecting to : '+location);
+        }
+        Server.Static.logTime(request_time);
+    };
+
+    Server.Static.logTime = function(request_time){
         let now = new Date();
         let time = now.getTime() - request_time;
+        console.log('Time taken: '+time+'ms');
+    };
+
+    Server.Static.serveFile = function(REQID, data, request_time){
+        let request = Server.requests[REQID];
         if(!request){
             console.log('Error: static worker received file for unknown request id');            
         }else{
-            let event = GNR8.Event('static serve file').trigger({})(request[0], data, request_time, now);
+            let event = GNR8.Event('static serve file').trigger({})(request[0], data, request_time);
             let res = request[2];
             let filename = request[0];
             res.statusCode = 200;
@@ -153,19 +207,15 @@ module.exports = function(){
             delete Server.requests[REQID];
             console.log('Served File : '+filename);
         }
-        
-        console.log('Time taken: '+time+'ms');
+        Server.Static.logTime(request_time);
     }
 
     Server.Static.serveNone = function(REQID, request_time){
         let request = Server.requests[REQID];
-        let now = new Date();
-        let time = now.getTime() - request_time;
-
         if(!request){
             console.log('Error: static worker told to serve none for unknown request id');            
         }else{
-            let event = GNR8.Event('static serve none').trigger({})(request[0], request_time, now);
+            let event = GNR8.Event('static serve none').trigger({})(request[0], request_time);
             let res = request[2];
             let filename = request[0];
             res.statusCode = 404;
@@ -175,8 +225,7 @@ module.exports = function(){
             delete Server.requests[REQID];
             console.log('Served 404 : '+filename);
         }
-        
-        console.log('Time taken: '+time+'ms');
+        Server.Static.logTime(request_time);
     }
 
     return Server.Static;

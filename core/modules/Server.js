@@ -25,6 +25,7 @@ module.exports = function(){
 
     Server.workers = {};
     Server.requests = {};
+    Server.generators = [];
 
     Server.nextReqID = 0;
 

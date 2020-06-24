@@ -14,7 +14,60 @@ module.exports = function(){
     Server.Cache.dependencies = {};
     Server.Cache.no_cache = true;
 
+    Server.generators = null;
+
+    Server.Cache.generatorExists = function(name){
+
+    }
+
     Server.Cache.serve = function(request){
+        function LoadDependencyFile(filename){
+            var depBase = path.resolve(Server.dependencyBasePath);
+            var dep_file = path.join(depBase, filename+'.txt');
+            Server.loadFile(dep_file)(function(err, file){
+                if(err){
+                    console.log('Error: loading dependencies file `'+dep_file+'`');
+                    console.error(err);
+                    NoDependencies();
+                }else{
+                    file = file.toString();
+                    file = file.split(/[\n\r]+/g).filter((line)=>line!=='');
+                    file.push(filename.split(/[\/\\]/g).join('/'));
+                    file = file.join('#');
+                    
+                    let msg = {
+                        'for' : request.for,
+                        'id' : request.id,
+                        'time' : request.time,
+                        'dependencies' : file
+                    };
+
+                    if(!Server.Cache.no_cache) Server.Cache.dependencies[filename] = file;
+
+                    Server.send('serve dependencies', msg);
+                }
+            });
+        }
+
+        function GeneratorExists(filename, done){
+            var depBase = path.resolve(Server.dependencyBasePath);
+            var dep_file = path.join(depBase, filename+'.txt');
+            var fileBase = path.resolve(Server.staticBasePath);
+            var real_file = path.join(fileBase, filename);
+            Server.fileExists(real_file)(function(exists){
+                if(!exists){
+                    done(-1);
+                }else{
+                    Server.fileExists(dep_file)(function(exists){
+                        if(!exists){
+                            done(0);
+                        }else{
+                            done(1)
+                        }
+                    });
+                }
+            });
+        }
         function NoFile(){
             let msg = {
                 'for' : request.for,
@@ -87,43 +140,53 @@ module.exports = function(){
                 };
                 Server.send('serve dependencies', msg);
             }else{
-                var depBase = path.resolve(Server.dependencyBasePath);
-                var dep_file = path.join(depBase, filename+'.txt');
-                var fileBase = path.resolve(Server.staticBasePath);
-                var real_file = path.join(fileBase, filename);
-                Server.fileExists(real_file)(function(exists){
-                    if(!exists){
-                        NoFile();
+                GeneratorExists(filename, function(exit_code){
+                    if(exit_code === -1) NoFile();
+                    else if(exit_code === 0) NoDependencies();
+                    else if(exit_code === 1) LoadDependencyFile(filename);
+                });
+            }
+        }else if(request.cmd === 'get generators'){
+            var resolvedBase = path.resolve('.');
+            var local_file = path.join(resolvedBase, 'generators');
+            if(Server.generators !== null){
+                let msg = {
+                    'for' : request.for,
+                    'id' : request.id,
+                    'time' : request.time,
+                    'generators' : Server.generators
+                };
+
+                Server.send('serve generators', msg);
+            }else{
+                Server.loadFile(local_file)(function(err, file){
+                    if(err){
+                        console.log('Error: loading generator list `'+local_file+'`');
+                        console.error(err);
+                        let msg = {
+                            'for' : request.for,
+                            'id' : request.id,
+                            'time' : request.time,
+                            'generators' : ''
+                        }
+                        Server.send('serve generators', msg);
                     }else{
-                        Server.fileExists(dep_file)(function(exists){
-                            if(!exists){
-                                NoDependencies();
-                            }else{
-                                Server.loadFile(dep_file)(function(err, file){
-                                    if(err){
-                                        console.log('Error: loading dependencies file `'+dep_file+'`');
-                                        console.error(err);
-                                        NoDependencies();
-                                    }else{
-                                        file = file.toString();
-                                        file = file.split(/[\n\r]+/g).filter((line)=>line!=='');
-                                        file.push(filename.split(/[\/\\]/g).join('/'));
-                                        file = file.join('#');
-                                        
-                                        let msg = {
-                                            'for' : request.for,
-                                            'id' : request.id,
-                                            'time' : request.time,
-                                            'dependencies' : file
-                                        };
-
-                                        if(!Server.Cache.no_cache) Server.Cache.dependencies[filename] = file;
-
-                                        Server.send('serve dependencies', msg);
-                                    }
-                                });
-                            }
-                        })
+                        file = file.toString();
+                        file = file.split(/[\n\r]+/g).filter((line)=>line!=='');
+                        file = file.join('#');
+                        
+                        let msg = {
+                            'for' : request.for,
+                            'id' : request.id,
+                            'time' : request.time,
+                            'generators' : file
+                        };
+    
+                        Server.send('serve generators', msg);
+    
+                        if(!Server.Cache.no_cache) Server.generators = file;
+    
+                        Server.send('serve dependencies', msg);
                     }
                 });
             }

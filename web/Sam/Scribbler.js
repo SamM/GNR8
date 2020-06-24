@@ -135,7 +135,7 @@
             }
 
             Step();
-
+            _context.restore();
             return _canvas;
             
         };

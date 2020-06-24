@@ -14,7 +14,7 @@ GNR8._query = {};
 
 GNR8.displayPadRatio = 1.5;
 
-GNR8.enableLightTheme = true;
+GNR8.enableLightTheme = false;
 
 GNR8.updateHash = function(){
     GNR8._hash = window.location.hash == '' ? '' : decodeURIComponent(window.location.hash.slice(1));
