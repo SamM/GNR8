@@ -53,7 +53,12 @@ module.exports = function(){
         })(fileLoc, req, res);
 
         if(safeSuffix==='\\' || safeSuffix === '/'){
-            fileLoc = safeSuffix+'index.html';
+            res.writeHead(302, {
+                'Location': '/Sam/SlashWord#GNR8.ART'
+            });
+            res.end();
+            return;
+            // fileLoc = safeSuffix+'index.html';
         }
 
         Server.requests[REQID] = [fileLoc, req, res];
