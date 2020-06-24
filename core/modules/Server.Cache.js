@@ -12,6 +12,7 @@ module.exports = function(){
 
     Server.Cache.files = {};
     Server.Cache.dependencies = {};
+    Server.Cache.no_cache = true;
 
     Server.Cache.serve = function(request){
         function NoFile(){
@@ -55,7 +56,8 @@ module.exports = function(){
                                     'time' : request.time,
                                     'file' : file
                                 };
-                                Server.Cache.files[filename] = file;
+
+                                if(!Server.Cache.no_cache) Server.Cache.files[filename] = file;
 
                                 Server.send('serve file', msg);
                             }
@@ -115,7 +117,7 @@ module.exports = function(){
                                             'dependencies' : file
                                         };
 
-                                        Server.Cache.dependencies[filename] = file;
+                                        if(!Server.Cache.no_cache) Server.Cache.dependencies[filename] = file;
 
                                         Server.send('serve dependencies', msg);
                                     }

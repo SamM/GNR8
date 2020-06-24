@@ -26,7 +26,8 @@ var module = module === undefined ? {} : module;
         }
         THIS.seed = seed;
 
-        if(THIS.i !== undefined){
+        if(THIS.i !== undefined && THIS.seed !== ''){
+            THIS.RANDOM = new THIS.seedrandom(seed);
             for(var i=0; i<THIS.i; i++){
                 FakeRun();
             }
