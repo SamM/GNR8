@@ -5,7 +5,7 @@
 
     let button_styles = {
         'position' : 'absolute',
-        'width' : '50px',
+        'width' : '5vw',
         'top' : '0',
         'height' : '100%',
         'bottom': '0',

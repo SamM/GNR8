@@ -10,6 +10,9 @@ let GNR8 = {};
 
 GNR8._hash = '';
 GNR8._title = '';
+GNR8._query = {};
+
+GNR8.displayPadRatio = 1.5;
 
 GNR8.updateHash = function(){
     GNR8._hash = window.location.hash == '' ? '' : decodeURIComponent(window.location.hash.slice(1));
@@ -27,23 +30,24 @@ GNR8.update = function(){
         let event = GNR8.Event('pre-update').trigger({
             hash : GNR8._hash
         })();
-        let art = GNR8.generate(event.context.hash)();
-        GNR8.show(art);
+        let element = GNR8.generate(event.context.hash)();
+        GNR8.show(element);
         GNR8.Event('update').trigger({
             hash : event.context.hash,
-            output : art
-        })();
+            element : element
+        })(element);
     }
 }
 
 GNR8.show = function(element){
-    GNR8.display.style.display = 'flex';
+    GNR8.display.style.display = 'block';
     if(element){
         GNR8.clear();
         let event = GNR8.Event('show').trigger({
             element : element
         })();
-        GNR8.display.appendChild(event.context.element);
+        element = event.context.element;
+        GNR8.display.appendChild(element);
     }
 };
 GNR8.clear = function(){
@@ -55,26 +59,106 @@ GNR8.hide = function(){
     GNR8.Event('hide').trigger({})();
 };
 
+GNR8.toVar = function(str){
+    // Parse Number: Integer and Float
+    if(str.search(/^[\-\+]?[0-9]+(\.([0-9])+)?$/g) === 0){
+        if(str.indexOf('.') > -1) return parseFloat(str);
+        else return parseInt(str);
+    }
+    // Parse Array / List
+    if(str.search(/^\[[^,]*(,[^,]*)*\]$/g) === 0){
+        str = str.slice(1,-1);
+        str = str.split(',');
+        return str.map(toVar);
+    }
+    // Parse boolean
+    if(str === 'true') return true;
+    if(str === 'false') return false;
+
+    // Parse null
+    if(str === 'null') return null;
+
+    // Parse undefined
+    if(str === '') return undefined;
+    
+    // Otherwise keep as string
+    return str;
+};
+
+GNR8.updateQuery = function(){
+    let query = window.location.href.split('#')[0].split('?');
+    if(query.length > 1){
+        GNR8._query = {};
+        query = query.slice(-1)[0];
+        query = query.split('&');
+        query.forEach(function(expr){
+            expr = expr.split('=');
+            let key = decodeURIComponent(expr[0]);
+            if(expr.length === 1){
+                if(key.length) GNR8._query[key] = true;
+            }else{
+                if(expr.length > 2){
+                    GNR8._query[key] = GNR8.toVar(decodeURIComponent(expr.slice(1).join('=')));
+                }else{
+                    GNR8._query[key] = GNR8.toVar(decodeURIComponent(expr[1]));
+                }
+            }
+        })
+    }
+}
+
+GNR8.query = function(param){
+    return GNR8._query[param];
+};
+
 GNR8.setup = function(){
     document.body.style.backgroundColor = 'black';  
+    document.body.style.overflow = 'hidden';  
+
+    GNR8.Event('show')(function(){
+        let element = this.element;
+        this.element = document.createElement('div');
+        this.element.appendChild(element);
+        let style = this.element.style;
+        let size = element.getBoundingClientRect();
+        let screen = GNR8.display.getBoundingClientRect();
+        size.width = size.width || element.width || screen.width || 0;
+        size.height = size.height || element.height || screen.height || 0;
+        size.width = Math.max(size.width, screen.width);
+        size.height = Math.max(size.height, screen.height);
+        Object.assign(style, {
+            'display': 'flex',
+            'align-items' : 'center',
+            'justify-content' : 'center',
+            'width': (size.width * GNR8.displayPadRatio)+'px',
+            'height': (size.height * GNR8.displayPadRatio)+'px'
+        });
+        console.log(size.width, size.height);
+    });
 
     GNR8.display = document.createElement('div');
+    
     let style = GNR8.display.style;
     Object.assign(style, {
         'position': 'absolute',
-        'background-color': 'black',
         'display': 'flex',
         'align-items' : 'center',
-        'justify-content' : 'center'
+        'justify-content' : 'center',
+        'background-color': 'black',
+        'overflow' : 'auto'
     });
     style.top = style.bottom = style.left = style.right = '0';
     style.width = style.height = '100%';
     GNR8.hide();
+    
     document.body.appendChild(GNR8.display);
     GNR8._title = document.title;
+    
     window.addEventListener('hashchange', GNR8.updateHash);
     window.addEventListener('hashchange', GNR8.update);
+
     GNR8.updateHash();
+    GNR8.updateQuery();
 
     GNR8.Event('setup').trigger({
         'hash' : GNR8._hash

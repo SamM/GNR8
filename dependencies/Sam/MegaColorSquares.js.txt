@@ -1,4 +1,6 @@
 seedrandom.js
 Builder.js
 MatrixScreen.js
+/core/CenterScrollUpdate.js
+/core/DragToScroll.js
 /core/IteratorGallery.js

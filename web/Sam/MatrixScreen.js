@@ -1,6 +1,9 @@
 function MatrixScreen(context){
+    var self = this;
+
     this.context = context||"2d";
     this.canvas = null;
+    this.depth = 0;
     this.getCanvas = function(){
         if(this.canvas === null){
             this.canvas = document.createElement('canvas');
@@ -12,10 +15,13 @@ function MatrixScreen(context){
         parentElement.appendChild(canvas);
         return canvas;
     };
+    this.render = function(width, height, context, depth, done){
+        this.depth = depth;
+        return this.draw(width, height, context, done);
+    };
     this.draw_function = function(width, height, context, done){
         if(typeof done != "function") done = function(){};
         done();
-        return null;
     };
     this.setDraw = function(draw_function, context){
         this.draw_function = draw_function;
@@ -24,18 +30,18 @@ function MatrixScreen(context){
     this.getDraw = function(){
         return this.draw_function;
     }
-    var self = this;
+    
     this.draw = function(width, height, context, done){
-        if(typeof done != "function") done = function(){};
-        if(!width) width = 100;
-        if(!height) height = 100;
+        
         if(!context){
             var canvas = this.getCanvas();
             canvas.width = width;
             canvas.height = height;
             context = canvas.getContext(this.context);
         }
-        if(MatrixScreen.renderIndex++ % MatrixScreen.throttleEvents == 0){
+        let self = this;
+        this.depth--;
+        if(MatrixScreen.throttleEvents && MatrixScreen.renderIndex++ % MatrixScreen.throttleEvents === 0){
             window.requestAnimationFrame(function(){
                 self.draw_function.call(self, width, height, context, done);
             });
@@ -46,18 +52,22 @@ function MatrixScreen(context){
     this.children = [];
     this.drawIndex = 0;
     this.drawChildren = function(width, height, context, done){
-        var max = self.children.length;
-        if(typeof done != "function") done = function(){};
-        self.drawIndex = -1;
-        function drawNextChild(){
-            self.drawIndex++;
-            if(self.drawIndex<max){
-                self.children[self.drawIndex].draw(width, height, context, drawNextChild);
+        var max = this.children.length;
+        var self = this;
+
+        function drawNextChild(index){
+            if(self.depth <= 0) return done();
+            if(index<max){
+                self.depth--;
+                (function(w,h,c,i){
+                    self.children[i].draw(w, h, c, drawNextChild.bind(self, i+1));
+                })(width, height, context, index);
             }else{
                 done();
             }
         }
-        drawNextChild();
+
+        drawNextChild(0);
     }
     this.add = function(screen){
         this.children.push(screen);

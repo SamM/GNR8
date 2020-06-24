@@ -5,7 +5,7 @@
 var module = module === undefined ? {} : module;
 (function(module){
 
-    function MatrixScreen2DHSLA(seed){
+    function MegaSquare(seed){
         
         const THIS = this;
         if(seed === undefined) seed = '';
@@ -16,7 +16,6 @@ var module = module === undefined ? {} : module;
             let index = parseInt(input.slice(-1)[0]);
             if(!isNaN(index)){
                 seed = input.slice(0,-1).join('#');
-                console.log(seed);
                 THIS.i = index;
             }
         }
@@ -55,6 +54,7 @@ var module = module === undefined ? {} : module;
         let screen = new THIS.MatrixScreen('2d');
 
         function draw_function(w, h, context, done){
+           
             var self = this;
                 var startX = self.getValue("startX");
                 var endX = self.getValue("endX");
@@ -75,7 +75,9 @@ var module = module === undefined ? {} : module;
                 context.save();
                 context.translate(Math.round(startX*w),Math.round(startY*h));
                 context.scale(scaleX, scaleY);
+                self.depth--;
                 self.drawChildren(w, h, context, function(){context.restore();done();});
+                
         };
         
         function makeRandom2DScreen(parentScreen, max_divisions, max_depth){
@@ -99,7 +101,7 @@ var module = module === undefined ? {} : module;
                     parentScreen.add(childScreen);
                     var newDepth = max_depth-Math.ceil(THIS.RANDOM()*max_depth);
                     if(newDepth>1) makeRandom2DScreen(childScreen, max_divisions, newDepth);
-                    childScreen.setDraw(draw_function, "2d");
+                    childScreen.setDraw(draw_function.bind(childScreen), "2d");
                 })(i);
                
             }
@@ -117,25 +119,52 @@ var module = module === undefined ? {} : module;
         screen.clearChildren();
 
         makeRandom2DScreen(screen, THIS.MAX_DIVISIONS, THIS.MAX_DEPTH);
-        screen.draw(THIS.width, THIS.height, false, function(){
+        screen.render(THIS.width, THIS.height, false, THIS.drawDepth, function(){
             window.requestAnimationFrame(function(){
                 MatrixScreen.renderIndex = 0;
             });
         });
 
+        screen.canvas.style['flex-shrink'] = '0';
+
         return screen.canvas;
     }
-    MatrixScreen2DHSLA.dependencies = {
+
+    function Setup(){
+        // ?size=800
+        // in pixels
+        let _size = GNR8.query('size');
+        _size = typeof _size === 'number' ? _size : 800;
+        MegaColorSquares.materials.width = MegaColorSquares.materials.height = _size;
+
+        // ?delay=1000
+        // is milliseconds
+        let _delay = GNR8.query('delay');
+        _delay = typeof _delay === 'number' ? _delay : 0;
+        MegaColorSquares.materials.drawDelay = _delay;
+        MatrixScreen.throttleEvents = _delay;
+
+        // ?max_draw=1000
+        // is milliseconds
+        let max_draw = GNR8.query('max_draw');
+        max_draw = typeof max_draw === 'number' ? max_draw : 1024;
+        MegaColorSquares.materials.drawDepth = max_draw;
+    }
+
+    GNR8.Event('setup')(Setup);
+
+    MegaSquare.materials = {
+        'drawDepth' : 1024,
         'MAX_DEPTH' : 4,
         'MAX_DIVISIONS': 200,
-        'width' : 800,
-        'height' : 800,
-        'drawDelay' : 1000,
+        'width' : 100,
+        'height' : 100,
+        'drawDelay' : 0,
         'MatrixScreen' : MatrixScreen,
         'seedrandom' : Math.seedrandom
     };
     
-    const MegaColorSquares = Builder(MatrixScreen2DHSLA, MatrixScreen2DHSLA.dependencies);
+    let MegaColorSquares = Builder(MegaSquare, MegaSquare.materials);
 
     this.MegaColorSquares = MegaColorSquares;
 

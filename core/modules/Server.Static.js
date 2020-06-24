@@ -41,7 +41,7 @@ module.exports = function(){
 
     Server.Static.serve = function(req, res) {
         var safeSuffix = path.normalize(req.url).replace(/^(\.\.[\/\\])+/, '');
-        var fileLoc = safeSuffix;
+        var fileLoc = safeSuffix.split('?')[0];
 
         var REQID = Server.nextReqID++;
 
