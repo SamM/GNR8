@@ -12,7 +12,7 @@
         let CONFIG = Generator.settings;
 
         let _size = CONFIG._size;
-        let _change = 0.25;
+        let _change = CONFIG._change == undefined ? 0.25 : CONFIG._change;
         let _spacing = 1.5;
         let _paint_bias = 2/3;
         let _draw_bias = 1/2;
@@ -145,7 +145,7 @@
     }
     Generator.settings = {
         '_size' : 512,
-        '_change' : 0.1,
+        '_change' : 0.2,
         'min_strokes' : 10,
         'max_strokes' : 128,
         'color_shift' : 0.5,
