@@ -14,6 +14,8 @@ GNR8._query = {};
 
 GNR8.displayPadRatio = 1.5;
 
+GNR8.enableLightTheme = true;
+
 GNR8.updateHash = function(){
     GNR8._hash = window.location.hash == '' ? '' : decodeURIComponent(window.location.hash.slice(1));
     GNR8.Event('update-hash').trigger({
@@ -112,7 +114,7 @@ GNR8.query = function(param){
 };
 
 GNR8.setup = function(){
-    document.body.style.backgroundColor = 'black';  
+    document.body.style.backgroundColor = GNR8.enableLightTheme ? 'white' : 'black';  
     document.body.style.overflow = 'hidden';  
 
     GNR8.Event('show')(function(){
@@ -144,7 +146,7 @@ GNR8.setup = function(){
         'display': 'flex',
         'align-items' : 'center',
         'justify-content' : 'center',
-        'background-color': 'black',
+        'background-color': GNR8.enableLightTheme ? 'white' : 'black',
         'overflow' : 'auto'
     });
     style.top = style.bottom = style.left = style.right = '0';
@@ -159,6 +161,21 @@ GNR8.setup = function(){
 
     GNR8.updateHash();
     GNR8.updateQuery();
+
+    // ?bg=+FFFFFF ==> will set the background color to hexcode : #FFFFFF
+    // ?bg=rgb(255,255,255) ==> will also set it to white
+    let background = GNR8.query('bg');
+    if(typeof background === 'string'){
+        background = background.split('+').join('#');
+        if(background.slice(0, 3) === 'hsl'){
+            let bg = background.slice(background.indexOf('('),-1).split(',');
+            if(bg.length > 1) bg[1] = bg[1]+'%';
+            if(bg.length > 2) bg[2] = bg[2].slice(0,-1)+'%';
+            background = (bg.length > 3 ? 'hsla' : 'hsl')+bg.join(',')+')';
+        }
+        GNR8.display.style.backgroundColor = background;
+        document.body.backgroundColor = background;
+    }
 
     GNR8.Event('setup').trigger({
         'hash' : GNR8._hash
