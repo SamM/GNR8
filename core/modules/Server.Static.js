@@ -28,6 +28,7 @@ module.exports = function(){
 
     Server.Static.NotFound = '//GNR8.ART - 404 Not Found';
     Server.Static.GeneratorHTML = '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8"/><title>%GENERATOR% !! GNR8.ART</title><dependencies/></head>\n<body><h1>%GENERATOR%</h1></body></html>'
+    Server.Static.home_greetings = ["GNR8.ART", "coming soon!", "generate art", "you rock!", "curious?", "you like?", 'ooo baby ...', ':-D', ':-P', "- _ -"];
 
     Server.Static.serveMaster = function(request){
         if(request.cmd === 'serve file'){
@@ -52,9 +53,12 @@ module.exports = function(){
             'response' : res
         })(fileLoc, req, res);
 
+
+
         if(safeSuffix==='\\' || safeSuffix === '/'){
+            let greetings = Server.Static.home_greetings;
             res.writeHead(302, {
-                'Location': '/Sam/SlashWord#GNR8.ART'
+                'Location': '/Sam/SlashWord#'+greetings[Math.floor(Math.random()*greetings.length)]
             });
             res.end();
             return;
