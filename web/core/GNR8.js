@@ -137,7 +137,7 @@ GNR8.setup = function(){
     });
 
     GNR8.display = document.createElement('div');
-    
+    GNR8.display.innerHTML = "&nbsp;";
     let style = GNR8.display.style;
     Object.assign(style, {
         'position': 'absolute',

@@ -135,21 +135,17 @@ var module = module === undefined ? {} : module;
         // ?size=800
         // in pixels
         let _size = GNR8.query('size');
-        _size = typeof _size === 'number' ? _size : 800;
+        let w = window.innerWidth || document.clientWidth || document.body.clientWidth;
+        let h = window.innerHeight|| document.clientHeight|| document.body.clientHeight;
+        _size = typeof _size === 'number' ? _size : Math.round(Math.min(h, w) * 0.85);
         MegaColorSquares.materials.width = MegaColorSquares.materials.height = _size;
 
         // ?delay=1000
         // is milliseconds
         let _delay = GNR8.query('delay');
-        _delay = typeof _delay === 'number' ? _delay : 0;
+        _delay = typeof _delay === 'number' ? _delay : 10;
         MegaColorSquares.materials.drawDelay = _delay;
         MatrixScreen.throttleEvents = _delay;
-
-        // ?max_draw=1000
-        // is milliseconds
-        let max_draw = GNR8.query('max_draw');
-        max_draw = typeof max_draw === 'number' ? max_draw : 1024;
-        MegaColorSquares.materials.drawDepth = max_draw;
     }
 
     GNR8.Event('setup')(Setup);
