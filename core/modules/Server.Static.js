@@ -162,7 +162,7 @@ module.exports = function(){
             // Random Greeting from the list
             //let greeting = greetings[Math.floor(Math.random()*greetings.length)];
             let greeting = [GNR8.Helpers.NameMe(2, true),
-                GNR8.Helpers.NameMe(2+Math.ceil(Math.random()*3), true)].join('');
+                GNR8.Helpers.NameMe(2+Math.floor(Math.random()*2), true)].join(' ');
             let location = generator+'?bg='+color+'#'+greeting;
             res.writeHead(302, {
                 'Location': location
