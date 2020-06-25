@@ -4,8 +4,9 @@ module.exports = function(){
     this.Helpers = Helpers;
 
     function NameMe(max_length, capitalize){
-        let c = 'qu|w|r|t|y|p|s|d|f|g|h|j|k|l|z|x|c|v|b|n|m|qu|ch|gh|pl|pr|br|bl|wr|wh|tr|sl|sp|spl|sn|spr|sc|scr|squ|st|str|scl|dr'.split('|');
-        let v = 'a|e|i|o|u|ee|oo|ae|ai|ou|oa|ie|ia|ei'.split('|');
+        let s = 'a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|qu|r|s|t|u|v|w|x|y|z|br|bl|ch|cl|cr|dr|fr|fl|gr|gl|kl|kr|pl|pr|squ|scr|scl|str|st|sl|sp|spr|spl|scr|sc|tr|vr|wr'.split('|')
+        let c = s.concat('|gh|rch|lch|rd|rm|rn|lm|lp|ck|rst'.split('|'));
+        let v = 'a|e|i|o|u'.split('|');
         let e = 'lp|lk|gh|lm|mn|rc|rst|st|ch|rch|x|t|b|ll|lp|p|n|rb|b|ss|m'.split('|');
         let l = 's|y|ee|ies|ie|er|ers|or|ors|le|ler|lers'.split('|');
     
@@ -22,8 +23,8 @@ module.exports = function(){
         let alt = false;
         function BuildName(){
             if(steps < max_length){
-                if(steps === 0) rep(c,1);
-                else if(steps == max_length - 2 || (max_length <= 3 && steps == max_length - 1)){
+                if(steps === 0) rep(s,1);
+                else if(steps == max_length - 1 || (max_length <= 3 && steps == max_length - 1)){
                     if(!alt){
                         rep(v, 1);
                         //steps++;
@@ -32,7 +33,7 @@ module.exports = function(){
                 }
                 else if(steps == max_length - 1 && Math.random() > 0.4) rep(l,1);
                 else{
-                    rep(alt?c:v,1);
+                    rep(alt?c:v,alt?1:Math.ceil(Math.random()*2));
                     alt = !alt;
                 }
                 steps++;
