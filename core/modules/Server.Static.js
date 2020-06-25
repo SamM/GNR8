@@ -161,7 +161,7 @@ module.exports = function(){
             let generator = '/Sam/SlashWord'
             // Random Greeting from the list
             //let greeting = greetings[Math.floor(Math.random()*greetings.length)];
-            let greeting = [GNR8.Helpers.NameMe(Math.ceil(Math.random()*6))].join(' ');
+            let greeting = [GNR8.Helpers.NameMe(Math.ceil(2+Math.random()*6))].join(' ');
             let location = generator+'?bg='+color+'#'+greeting;
             res.writeHead(302, {
                 'Location': location
