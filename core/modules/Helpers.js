@@ -4,7 +4,7 @@ module.exports = function(){
     this.Helpers = Helpers;
 
     function NameMe(max_length, capitalize){
-        let s = 'a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|qu|r|s|t|u|v|w|x|y|z|br|bl|ch|cl|cr|dr|fr|fl|gr|gl|kl|kr|pl|pr|squ|scr|scl|str|st|sl|sp|spr|spl|scr|sc|tr|vr|wr'.split('|')
+        let s = 'b|c|d|f|g|h|j|k|l|m|n|p|qu|r|s|t|v|w|x|y|z|br|bl|ch|cl|cr|dr|fr|fl|gr|gl|kl|kr|pl|pr|squ|scr|scl|str|st|sl|sp|spr|spl|scr|sc|tr|vr|wr'.split('|')
         let c = s.concat('|gh|rch|lch|rd|rm|rn|lm|lp|ck|rst'.split('|'));
         let v = 'a|e|i|o|u'.split('|');
         let e = 'lp|lk|gh|lm|mn|rc|rst|st|ch|rch|x|t|b|ll|lp|p|n|rb|b|ss|m'.split('|');
