@@ -156,7 +156,7 @@ module.exports = function(){
         if(typeof generators === 'string') generators = generators.split('#');
         else if(!Array.isArray(generators)) generators = [];
 
-        let request = Server.requests[REQID];
+        let request = Server.requests[REQID];+
         if(!request){
             console.log('Error: static worker received generator list for unknown request id');            
         }else{

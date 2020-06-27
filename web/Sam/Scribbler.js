@@ -168,6 +168,7 @@
         Generator.settings.max_strokes = max_strokes;
     }
 
-    GNR8.generate = Generator;
+    GNR8.Generator.add = Generator;
+    //GNR8.generate = Generator; // depreciated
 
 })();

@@ -1,1 +1,2 @@
 /core/CenterScrollUpdate.js
+/Sam/Scribbler.js

@@ -184,4 +184,15 @@ GNR8.setup = function(){
     GNR8.update();
 }
 
+GNR8.Generator = function(){
+    // TODO
+}
+
+GNR8.Generator.list = [];
+GNR8.Generator.add = function(Generator){
+    if( typeof Generator == 'function' ) {
+        
+    }
+}
+
 window.addEventListener('load', GNR8.setup);

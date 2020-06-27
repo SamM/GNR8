@@ -53,7 +53,7 @@ module.exports = function(){
             rep(v, 1);
             rep(e,1+Math.floor(Math.random()));
             if(steps == syllables - 1 && Math.random() > 1/3) rep(l,1);
-            word = word.replace(/u(u+)/g,"u");
+            word = word.replace(/u(u+)/g,"u"+rand(v.slice(0,-1)));
             steps++;
             BuildSyllable(Math.random() < 1/3);
         }
