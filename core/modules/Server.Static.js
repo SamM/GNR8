@@ -29,7 +29,8 @@ module.exports = function(){
         "js": "text/javascript; charset=utf-8",
         "css": "text/css; charset=utf-8"
       };  
-
+    
+    Server.Static.Redirect = "//Redirecting..."
     Server.Static.NotFound = '//GNR8.ART - 404 Not Found';
     Server.Static.GeneratorHTML = '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8"/><title>%GENERATOR% !! GNR8.ART</title><dependencies/></head>\n<body><h1>%GENERATOR%</h1></body></html>'
     Server.Static.home_greetings = ["GNR8.ART", "coming soon!", "generate art", "you rock!", "curious?", "you like?", 'ooo baby ...', ':-D', ':-P', "- _ -"];
@@ -96,6 +97,7 @@ module.exports = function(){
     var template_path = path.resolve(Server.templateBasePath);
     var generator_template = path.join(template_path, 'generator.html');
     var not_found_template = path.join(template_path, 'not-found.html');
+    var redirect_template = path.join(template_path, 'redirect.html');
 
     Server.loadFile(generator_template)(function(err, file){
         if(err){
@@ -112,6 +114,15 @@ module.exports = function(){
         }else{
             file = file.toString();
             Server.Static.NotFound = file;
+        }
+    });
+
+    Server.loadFile(redirect_template)(function(err, file){
+        if(err){
+            console.log('Error: preloading 404 template file');
+        }else{
+            file = file.toString();
+            Server.Static.Redirect = file;
         }
     });
     
@@ -153,7 +164,6 @@ module.exports = function(){
             let res = request[2];
             let filename = request[0];
             Server.generators = generators;
-            let greetings = Server.Static.home_greetings;
             // Random Background Color
             let color = GNR8.Helpers.RandomRGB();
             // Random Generator from the list
@@ -161,8 +171,9 @@ module.exports = function(){
             let generator = '/Sam/SlashWord'
             // Random Greeting from the list
             //let greeting = greetings[Math.floor(Math.random()*greetings.length)];
-            let greeting = [GNR8.Helpers.NameMe(Math.ceil(2+Math.random()*6))].join(' ');
-            let location = generator+'?bg='+color+'#'+greeting;
+            let hash = [GNR8.Helpers.Worder(Math.ceil(Math.random()*3))].join(' ');
+            let location = generator+'?bg='+color+'#'+hash;
+            //let body = Server.Static.Redirect.replace("%LOCATION%", location)
             res.writeHead(302, {
                 'Location': location
             });
